@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Colorful Focus Timer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  <main class="app-shell">
+    <section class="hero-card glass-card">
+      <div>
+        <p class="eyebrow">Daily focus dashboard</p>
+        <h1>Stay bright, stay on track.</h1>
+        <p class="hero-copy">
+          Use the timer for deep work, organize your top priorities, and keep your day moving with a colorful task board.
+        </p>
+      </div>
+      <div class="hero-badges">
+        <span>⏱ Timer</span>
+        <span>✅ Task list</span>
+        <span>🎯 Priorities</span>
+      </div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="glass-card timer-card">
+        <div class="section-heading">
+          <h2>Focus timer</h2>
+          <p>Pick a duration and keep your session on track.</p>
+        </div>
+
+        <div class="timer-controls">
+          <label>
+            <span>Minutes</span>
+            <input id="durationInput" type="number" min="1" max="180" value="25" />
+          </label>
+          <div class="button-row">
+            <button id="startBtn" class="primary-btn">Start</button>
+            <button id="pauseBtn" class="secondary-btn">Pause</button>
+            <button id="resetBtn" class="ghost-btn">Reset</button>
+          </div>
+        </div>
+
+        <div class="timer-display">
+          <div class="timer-ring" id="timerRing">
+            <div>
+              <p id="statusText">Ready</p>
+              <h3 id="timeDisplay">25:00</h3>
+            </div>
+          </div>
+          <div class="preset-row">
+            <button data-minutes="15" class="preset-btn">15 min</button>
+            <button data-minutes="25" class="preset-btn active">25 min</button>
+            <button data-minutes="50" class="preset-btn">50 min</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="glass-card todo-card">
+        <div class="section-heading">
+          <h2>Things to do</h2>
+          <p>Add tasks, mark them complete, and keep your priorities clear.</p>
+        </div>
+
+        <form id="taskForm" class="task-form">
+          <input id="taskInput" type="text" maxlength="80" placeholder="Add a new task" required />
+          <button type="submit" class="primary-btn">Add task</button>
+        </form>
+
+        <div class="task-stats">
+          <span id="taskCount">0 tasks</span>
+          <span id="doneCount">0 done</span>
+        </div>
+
+        <ul id="taskList" class="task-list"></ul>
+      </article>
+    </section>
+
+    <section class="glass-card quick-list-card">
+      <div class="section-heading">
+        <h2>Quick task list</h2>
+        <p>Use this area for your current priorities and daily wins.</p>
+      </div>
+      <div class="quick-list-grid">
+        <div class="quick-item">
+          <span>🎯</span>
+          <div>
+            <h3>Focus goal</h3>
+            <p>Complete one important task before your next break.</p>
+          </div>
+        </div>
+        <div class="quick-item">
+          <span>🌈</span>
+          <div>
+            <h3>Creative spark</h3>
+            <p>Use a short reset to refresh your ideas.</p>
+          </div>
+        </div>
+        <div class="quick-item">
+          <span>📌</span>
+          <div>
+            <h3>Daily notes</h3>
+            <p>Jot down what you completed and what you want next.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>
