@@ -1,117 +1,766 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Colorful Focus Timer</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div class="bg-orb orb-1"></div>
-  <div class="bg-orb orb-2"></div>
-  <div class="bg-orb orb-3"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aurelia Commerce — Apple Glass Store</title>
+    <style>
+      :root {
+        --bg-deep: #060817;
+        --bg-mid: #1f3c78;
+        --bg-accent: #7c6cff;
+        --text: #f7f8ff;
+        --muted: #dfe7ff;
+        --glass: rgba(255, 255, 255, 0.15);
+        --glass-strong: rgba(255, 255, 255, 0.3);
+      }
 
-  <main class="app-shell">
-    <section class="hero-card glass-card">
-      <div>
-        <p class="eyebrow">Daily focus dashboard</p>
-        <h1>Stay bright, stay on track.</h1>
-        <p class="hero-copy">
-          Use the timer for deep work, organize your top priorities, and keep your day moving with a colorful task board.
-        </p>
-      </div>
-      <div class="hero-badges">
-        <span>⏱ Timer</span>
-        <span>✅ Task list</span>
-        <span>🎯 Priorities</span>
-      </div>
-    </section>
+      * {
+        box-sizing: border-box;
+      }
 
-    <section class="dashboard-grid">
-      <article class="glass-card timer-card">
-        <div class="section-heading">
-          <h2>Focus timer</h2>
-          <p>Pick a duration and keep your session on track.</p>
-        </div>
+      html {
+        scroll-behavior: smooth;
+      }
 
-        <div class="timer-controls">
-          <label>
-            <span>Minutes</span>
-            <input id="durationInput" type="number" min="1" max="180" value="25" />
-          </label>
-          <div class="button-row">
-            <button id="startBtn" class="primary-btn">Start</button>
-            <button id="pauseBtn" class="secondary-btn">Pause</button>
-            <button id="resetBtn" class="ghost-btn">Reset</button>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        color: var(--text);
+        background: radial-gradient(circle at top left, rgba(124, 108, 255, 0.35), transparent 28%), linear-gradient(125deg, var(--bg-deep), var(--bg-mid) 46%, #5d5df0 100%);
+        overflow-x: hidden;
+        position: relative;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        width: 360px;
+        height: 360px;
+        border-radius: 50%;
+        filter: blur(46px);
+        opacity: 0.35;
+        pointer-events: none;
+        z-index: 0;
+        animation: drift 18s ease-in-out infinite alternate;
+      }
+
+      body::before {
+        top: -100px;
+        right: -80px;
+        background: #7ca9ff;
+      }
+
+      body::after {
+        bottom: -120px;
+        left: -90px;
+        background: #ff6fb4;
+      }
+
+      .glass {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+      }
+
+      .page-shell {
+        position: relative;
+        z-index: 1;
+        width: min(1220px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 20px 0 48px;
+      }
+
+      .navbar {
+        position: sticky;
+        top: 16px;
+        z-index: 40;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 14px 18px;
+        border-radius: 999px;
+        margin-bottom: 22px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #fff;
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #20232c, #5a6df8);
+      }
+
+      .search-wrap {
+        flex: 1;
+        max-width: 430px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 999px;
+      }
+
+      .search-wrap input {
+        flex: 1;
+        border: 0;
+        outline: none;
+        background: transparent;
+        color: #fff;
+        font-size: 0.97rem;
+      }
+
+      .search-wrap input::placeholder {
+        color: rgba(255, 255, 255, 0.76);
+      }
+
+      .cart-toggle {
+        position: relative;
+        border: 0;
+        color: #fff;
+        cursor: pointer;
+        padding: 12px 14px;
+        border-radius: 999px;
+        font-size: 1rem;
+        transition: transform 0.2s ease, background 0.2s ease;
+      }
+
+      .cart-toggle:hover,
+      .filter-btn:hover,
+      .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+      }
+
+      .cart-badge {
+        position: absolute;
+        top: -6px;
+        right: -4px;
+        min-width: 22px;
+        height: 22px;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #1d2a48;
+        font-size: 0.76rem;
+        font-weight: 700;
+        padding: 0 6px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+        padding: 32px;
+        border-radius: 32px;
+        margin-bottom: 24px;
+      }
+
+      .hero-copy h1 {
+        margin: 0 0 10px;
+        font-size: clamp(2rem, 4vw, 3.25rem);
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+      }
+
+      .hero-copy p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.7;
+        max-width: 620px;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .btn-glass {
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        color: #fff;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 12px 18px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+
+      .hero-highlights {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .hero-side {
+        display: grid;
+        gap: 12px;
+        align-content: start;
+        padding: 18px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .hero-side h2 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+
+      .hero-side p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .catalog {
+        padding: 10px 0 0;
+      }
+
+      .section-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 14px 0 12px;
+      }
+
+      .section-heading h2 {
+        margin: 0;
+        font-size: 1.15rem;
+      }
+
+      .section-heading p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .filter-btn {
+        border: 0;
+        padding: 10px 16px;
+        border-radius: 999px;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.15);
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+
+      .filter-btn.active {
+        background: rgba(255, 255, 255, 0.28);
+      }
+
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 16px;
+      }
+
+      .product-card {
+        display: flex;
+        flex-direction: column;
+        border-radius: 24px;
+        overflow: hidden;
+      }
+
+      .product-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .product-body {
+        padding: 14px 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .product-body h3 {
+        margin: 0;
+        font-size: 1rem;
+        letter-spacing: -0.02em;
+      }
+
+      .product-price {
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+
+      .product-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .empty-card {
+        grid-column: 1 / -1;
+        padding: 24px;
+        border-radius: 24px;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 7, 19, 0.4);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.25s ease;
+        z-index: 60;
+      }
+
+      .overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .cart-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: min(360px, 100%);
+        z-index: 70;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid rgba(255, 255, 255, 0.28);
+      }
+
+      .cart-sidebar.open {
+        transform: translateX(0);
+      }
+
+      .cart-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 18px 12px;
+      }
+
+      .cart-header h3 {
+        margin: 0;
+        font-size: 1.12rem;
+      }
+
+      .icon-btn {
+        border: 0;
+        background: transparent;
+        color: #fff;
+        cursor: pointer;
+        font-size: 1.1rem;
+      }
+
+      .cart-items {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0 16px 16px;
+      }
+
+      .empty-cart {
+        padding: 24px;
+        border-radius: 20px;
+        text-align: center;
+        color: var(--muted);
+        margin-top: 10px;
+      }
+
+      .cart-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .cart-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.14);
+      }
+
+      .cart-item strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .cart-item button {
+        border: 0;
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        border-radius: 999px;
+        padding: 7px 10px;
+        cursor: pointer;
+      }
+
+      .cart-footer {
+        padding: 16px 18px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.16);
+        display: grid;
+        gap: 10px;
+      }
+
+      .cart-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1rem;
+      }
+
+      .checkout-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .cart-toggle.bump {
+        animation: bump 0.35s ease;
+      }
+
+      @keyframes drift {
+        from {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        to {
+          transform: translate3d(20px, 18px, 0) scale(1.08);
+        }
+      }
+
+      @keyframes bump {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.04); }
+        100% { transform: scale(1); }
+      }
+
+      @media (max-width: 840px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .navbar {
+          border-radius: 24px;
+          flex-wrap: wrap;
+        }
+
+        .search-wrap {
+          order: 3;
+          max-width: none;
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .page-shell {
+          width: min(100% - 16px, 1220px);
+        }
+
+        .hero {
+          padding: 20px;
+        }
+
+        .product-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="page-shell">
+      <header class="navbar glass">
+        <a href="#" class="brand">
+          <span class="brand-mark">⌁</span>
+          <span>Aurelia Commerce</span>
+        </a>
+        <label class="search-wrap glass" aria-label="Search products">
+          <span>⌕</span>
+          <input id="searchInput" type="search" placeholder="Search devices, food, gadgets..." />
+        </label>
+        <button class="cart-toggle glass" id="cartToggle" type="button">
+          🛍
+          <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+      </header>
+
+      <section class="hero glass">
+        <div class="hero-copy">
+          <h1>Future of Shopping</h1>
+          <p>Discover polished essentials with the comfort of an Apple-inspired interface, fast search, and a smart cart built for the modern shopper.</p>
+          <div class="hero-actions">
+            <button class="btn-glass" type="button" id="shopNowBtn">Shop Now</button>
+            <button class="btn-glass" type="button">Explore Deals</button>
+          </div>
+          <div class="hero-highlights">
+            <span class="pill">⚡ Instant search</span>
+            <span class="pill">🛒 Live cart</span>
+            <span class="pill">✨ Glass UI</span>
           </div>
         </div>
+        <div class="hero-side">
+          <h2>Design-forward essentials</h2>
+          <p>Curated products across phones, food, and gadgets, all presented in a responsive glass storefront experience.</p>
+        </div>
+      </section>
 
-        <div class="timer-display">
-          <div class="timer-ring" id="timerRing">
-            <div>
-              <p id="statusText">Ready</p>
-              <h3 id="timeDisplay">25:00</h3>
+      <section class="catalog" id="catalog">
+        <div class="section-heading">
+          <h2>Browse products</h2>
+          <p>Filter by your favorite category.</p>
+        </div>
+        <div class="filter-row" id="filterRow">
+          <button class="filter-btn active" data-category="All" type="button">All</button>
+          <button class="filter-btn" data-category="Phones" type="button">Phones</button>
+          <button class="filter-btn" data-category="Food" type="button">Food</button>
+          <button class="filter-btn" data-category="Gadgets" type="button">Gadgets</button>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+      </section>
+    </div>
+
+    <aside class="cart-sidebar glass" id="cartSidebar">
+      <div class="cart-header">
+        <h3>Your Cart</h3>
+        <button class="icon-btn" id="closeCart" type="button">✕</button>
+      </div>
+      <div class="cart-items" id="cartItems"></div>
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>Total</span>
+          <strong id="cartTotal">$0.00</strong>
+        </div>
+        <button class="btn-glass checkout-btn" id="checkoutBtn" type="button">Checkout</button>
+      </div>
+    </aside>
+
+    <script>
+      const products = [
+        { id: 1, name: 'iPhone 15 Pro', category: 'Phones', price: 999, image: 'https://source.unsplash.com/random/400x400/?iphone,phone' },
+        { id: 2, name: 'iPhone 14', category: 'Phones', price: 799, image: 'https://source.unsplash.com/random/400x400/?iphone,apple' },
+        { id: 3, name: 'Samsung Galaxy S24 Ultra', category: 'Phones', price: 1199, image: 'https://source.unsplash.com/random/400x400/?samsung,phone' },
+        { id: 4, name: 'Samsung Galaxy Z Fold', category: 'Phones', price: 1799, image: 'https://source.unsplash.com/random/400x400/?foldable,phone' },
+        { id: 5, name: 'Organic Apples', category: 'Food', price: 6.99, image: 'https://source.unsplash.com/random/400x400/?apples,fruit' },
+        { id: 6, name: 'Artisan Coffee Beans', category: 'Food', price: 14.5, image: 'https://source.unsplash.com/random/400x400/?coffee,beans' },
+        { id: 7, name: 'Dark Chocolate Bar', category: 'Food', price: 5.25, image: 'https://source.unsplash.com/random/400x400/?chocolate,sweet' },
+        { id: 8, name: 'Sparkling Water', category: 'Food', price: 3.99, image: 'https://source.unsplash.com/random/400x400/?water,bottle' },
+        { id: 9, name: 'AirPods Pro', category: 'Gadgets', price: 249, image: 'https://source.unsplash.com/random/400x400/?airpods,earbuds' },
+        { id: 10, name: 'Apple Watch Ultra', category: 'Gadgets', price: 799, image: 'https://source.unsplash.com/random/400x400/?watch,smartwatch' },
+        { id: 11, name: 'Mechanical Keyboard', category: 'Gadgets', price: 129, image: 'https://source.unsplash.com/random/400x400/?keyboard,mechanical' },
+        { id: 12, name: '4K Monitor', category: 'Gadgets', price: 349, image: 'https://source.unsplash.com/random/400x400/?monitor,display' }
+      ];
+
+      const productGrid = document.getElementById('productGrid');
+      const searchInput = document.getElementById('searchInput');
+      const filterButtons = document.querySelectorAll('.filter-btn');
+      const cartToggle = document.getElementById('cartToggle');
+      const overlay = document.getElementById('overlay');
+      const cartSidebar = document.getElementById('cartSidebar');
+      const closeCart = document.getElementById('closeCart');
+      const cartItems = document.getElementById('cartItems');
+      const cartBadge = document.getElementById('cartBadge');
+      const cartTotal = document.getElementById('cartTotal');
+      const checkoutBtn = document.getElementById('checkoutBtn');
+      const shopNowBtn = document.getElementById('shopNowBtn');
+
+      let activeCategory = 'All';
+      let searchTerm = '';
+      let cart = [];
+
+      function formatCurrency(value) {
+        return `$${value.toFixed(2)}`;
+      }
+
+      function getFilteredProducts() {
+        const query = searchTerm.trim().toLowerCase();
+        return products.filter((product) => {
+          const matchesCategory = activeCategory === 'All' || product.category === activeCategory;
+          const matchesSearch = !query || product.name.toLowerCase().includes(query) || product.category.toLowerCase().includes(query);
+          return matchesCategory && matchesSearch;
+        });
+      }
+
+      function renderProducts() {
+        const filtered = getFilteredProducts();
+        productGrid.innerHTML = '';
+
+        if (!filtered.length) {
+          productGrid.innerHTML = `
+            <div class="empty-card glass">
+              <h3>No products found</h3>
+              <p>Try another keyword or category to uncover more essentials.</p>
             </div>
-          </div>
-          <div class="preset-row">
-            <button data-minutes="15" class="preset-btn">15 min</button>
-            <button data-minutes="25" class="preset-btn active">25 min</button>
-            <button data-minutes="50" class="preset-btn">50 min</button>
-          </div>
-        </div>
-      </article>
+          `;
+          return;
+        }
 
-      <article class="glass-card todo-card">
-        <div class="section-heading">
-          <h2>Things to do</h2>
-          <p>Add tasks, mark them complete, and keep your priorities clear.</p>
-        </div>
+        filtered.forEach((product) => {
+          const card = document.createElement('article');
+          card.className = 'product-card glass';
+          card.innerHTML = `
+            <img src="${product.image}" alt="${product.name}" />
+            <div class="product-body">
+              <span class="pill">${product.category}</span>
+              <h3>${product.name}</h3>
+              <div class="product-meta">
+                <span class="product-price">${formatCurrency(product.price)}</span>
+                <button class="btn-glass add-btn" data-id="${product.id}" type="button">Add to Cart</button>
+              </div>
+            </div>
+          `;
+          productGrid.appendChild(card);
+        });
 
-        <form id="taskForm" class="task-form">
-          <input id="taskInput" type="text" maxlength="80" placeholder="Add a new task" required />
-          <button type="submit" class="primary-btn">Add task</button>
-        </form>
+        document.querySelectorAll('.add-btn').forEach((button) => {
+          button.addEventListener('click', () => addToCart(Number(button.dataset.id)));
+        });
+      }
 
-        <div class="task-stats">
-          <span id="taskCount">0 tasks</span>
-          <span id="doneCount">0 done</span>
-        </div>
+      function addToCart(productId) {
+        const product = products.find((item) => item.id === productId);
+        if (!product) return;
 
-        <ul id="taskList" class="task-list"></ul>
-      </article>
-    </section>
+        const existingItem = cart.find((item) => item.id === productId);
+        if (existingItem) {
+          existingItem.quantity += 1;
+        } else {
+          cart.push({ ...product, quantity: 1 });
+        }
 
-    <section class="glass-card quick-list-card">
-      <div class="section-heading">
-        <h2>Quick task list</h2>
-        <p>Use this area for your current priorities and daily wins.</p>
-      </div>
-      <div class="quick-list-grid">
-        <div class="quick-item">
-          <span>🎯</span>
-          <div>
-            <h3>Focus goal</h3>
-            <p>Complete one important task before your next break.</p>
-          </div>
-        </div>
-        <div class="quick-item">
-          <span>🌈</span>
-          <div>
-            <h3>Creative spark</h3>
-            <p>Use a short reset to refresh your ideas.</p>
-          </div>
-        </div>
-        <div class="quick-item">
-          <span>📌</span>
-          <div>
-            <h3>Daily notes</h3>
-            <p>Jot down what you completed and what you want next.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+        updateCartUI();
+        cartToggle.classList.remove('bump');
+        void cartToggle.offsetWidth;
+        cartToggle.classList.add('bump');
+      }
 
-  <script src="main.js"></script>
-</body>
+      function removeFromCart(productId) {
+        cart = cart.filter((item) => item.id !== productId);
+        updateCartUI();
+      }
+
+      function updateCartUI() {
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartBadge.textContent = totalItems;
+        const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        cartTotal.textContent = formatCurrency(totalPrice);
+        checkoutBtn.disabled = cart.length === 0;
+        renderCart();
+      }
+
+      function renderCart() {
+        cartItems.innerHTML = '';
+
+        if (!cart.length) {
+          cartItems.innerHTML = `
+            <div class="empty-cart glass">
+              <div style="font-size: 1.5rem; margin-bottom: 6px;">🛒</div>
+              <strong>Your cart is empty</strong>
+              <p>Add a few favorites and they will appear here instantly.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const list = document.createElement('div');
+        list.className = 'cart-list';
+
+        cart.forEach((item) => {
+          const row = document.createElement('div');
+          row.className = 'cart-item';
+          row.innerHTML = `
+            <div>
+              <strong>${item.name}</strong>
+              <div>${formatCurrency(item.price)} × ${item.quantity}</div>
+            </div>
+            <button type="button" data-id="${item.id}">Remove</button>
+          `;
+          list.appendChild(row);
+        });
+
+        cartItems.appendChild(list);
+        cartItems.querySelectorAll('button[data-id]').forEach((button) => {
+          button.addEventListener('click', () => removeFromCart(Number(button.dataset.id)));
+        });
+      }
+
+      function openCart() {
+        cartSidebar.classList.add('open');
+        overlay.classList.add('active');
+      }
+
+      function closeCartPanel() {
+        cartSidebar.classList.remove('open');
+        overlay.classList.remove('active');
+      }
+
+      searchInput.addEventListener('input', (event) => {
+        searchTerm = event.target.value;
+        renderProducts();
+      });
+
+      filterButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          filterButtons.forEach((item) => item.classList.remove('active'));
+          button.classList.add('active');
+          activeCategory = button.dataset.category;
+          renderProducts();
+        });
+      });
+
+      cartToggle.addEventListener('click', openCart);
+      closeCart.addEventListener('click', closeCartPanel);
+      overlay.addEventListener('click', closeCartPanel);
+      shopNowBtn.addEventListener('click', () => document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' }));
+
+      checkoutBtn.addEventListener('click', () => {
+        if (!cart.length) return;
+        alert('Thank you for your purchase!');
+        cart = [];
+        updateCartUI();
+        closeCartPanel();
+      });
+
+      renderProducts();
+      updateCartUI();
+    </script>
+  </body>
 </html>
