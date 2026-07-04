@@ -1,11 +1,9 @@
 import cv2
 import mediapipe as mp
 
-# Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands
 mp_draw = mp.solutions.drawing_utils
 
-# Initialize the webcam (0 is usually the default camera)
 cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
@@ -20,8 +18,8 @@ with mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.7, min_tracking_
         if not ret:
             break
 
-        # Convert BGR (OpenCV) to RGB (MediaPipe expects RGB)
-        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        image = cv2.cvtColor
+        Conv#ert BGR (OpenCV) to RGB (MediaPipe expects RGB)(frame, cv2.COLOR_BGR2RGB)
         image.flags.writeable = False
         
         # Process the image to find hands
