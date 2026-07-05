@@ -14,7 +14,7 @@
     --font-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     --dark-mode-bg: #0f172a;
     --dark-mode-card: rgba(30, 41, 59, 0.3);
-    --dark-mode-border: #ffffff: rgba(255, 255, 255, 0.1);
+    --dark-mode-border: rgba(255, 255, 255, 0.1);
 }
 
 * {
@@ -786,13 +786,6 @@ body.dark-mode .principal-message {
     margin-bottom: 2rem;
 }
 
-.ticker-track {
-    display: flex;
-    animation: tickerScroll 20s background: var(--glass-bg);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    margin-bottom: 2rem;
-}
 
 .ticker-track {
     display: flex;
