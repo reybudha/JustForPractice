@@ -19,7 +19,7 @@ with mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.7, min_tracking_
             break
 
         image = cv2.cvtColor
-        Conv#ert BGR (OpenCV) to RGB (MediaPipe expects RGB)(frame, cv2.COLOR_BGR2RGB)
+        #Convert BGR (OpenCV) to RGB (MediaPipe expects RGB)(frame, cv2.COLOR_BGR2RGB)
         image.flags.writeable = False
         
         # Process the image to find hands

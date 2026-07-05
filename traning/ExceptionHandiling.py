@@ -13,6 +13,6 @@ try:
         print ("Ur predection is wrong . The number is ", a , b)
 except Exception as e:
     print(e)
-10
+    
 print("Some imp lines od code ")
 print("thank U")

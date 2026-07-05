@@ -1,766 +1,961 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aurelia Commerce — Apple Glass Store</title>
-    <style>
-      :root {
-        --bg-deep: #060817;
-        --bg-mid: #1f3c78;
-        --bg-accent: #7c6cff;
-        --text: #f7f8ff;
-        --muted: #dfe7ff;
-        --glass: rgba(255, 255, 255, 0.15);
-        --glass-strong: rgba(255, 255, 255, 0.3);
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html {
-        scroll-behavior: smooth;
-      }
-
-      body {
-        margin: 0;
-        min-height: 100vh;
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-        color: var(--text);
-        background: radial-gradient(circle at top left, rgba(124, 108, 255, 0.35), transparent 28%), linear-gradient(125deg, var(--bg-deep), var(--bg-mid) 46%, #5d5df0 100%);
-        overflow-x: hidden;
-        position: relative;
-      }
-
-      body::before,
-      body::after {
-        content: "";
-        position: fixed;
-        width: 360px;
-        height: 360px;
-        border-radius: 50%;
-        filter: blur(46px);
-        opacity: 0.35;
-        pointer-events: none;
-        z-index: 0;
-        animation: drift 18s ease-in-out infinite alternate;
-      }
-
-      body::before {
-        top: -100px;
-        right: -80px;
-        background: #7ca9ff;
-      }
-
-      body::after {
-        bottom: -120px;
-        left: -90px;
-        background: #ff6fb4;
-      }
-
-      .glass {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-      }
-
-      .page-shell {
-        position: relative;
-        z-index: 1;
-        width: min(1220px, calc(100% - 24px));
-        margin: 0 auto;
-        padding: 20px 0 48px;
-      }
-
-      .navbar {
-        position: sticky;
-        top: 16px;
-        z-index: 40;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        padding: 14px 18px;
-        border-radius: 999px;
-        margin-bottom: 22px;
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        color: #fff;
-        text-decoration: none;
-      }
-
-      .brand-mark {
-        width: 38px;
-        height: 38px;
-        display: grid;
-        place-items: center;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #20232c, #5a6df8);
-      }
-
-      .search-wrap {
-        flex: 1;
-        max-width: 430px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 16px;
-        border-radius: 999px;
-      }
-
-      .search-wrap input {
-        flex: 1;
-        border: 0;
-        outline: none;
-        background: transparent;
-        color: #fff;
-        font-size: 0.97rem;
-      }
-
-      .search-wrap input::placeholder {
-        color: rgba(255, 255, 255, 0.76);
-      }
-
-      .cart-toggle {
-        position: relative;
-        border: 0;
-        color: #fff;
-        cursor: pointer;
-        padding: 12px 14px;
-        border-radius: 999px;
-        font-size: 1rem;
-        transition: transform 0.2s ease, background 0.2s ease;
-      }
-
-      .cart-toggle:hover,
-      .filter-btn:hover,
-      .btn-glass:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-1px);
-      }
-
-      .cart-badge {
-        position: absolute;
-        top: -6px;
-        right: -4px;
-        min-width: 22px;
-        height: 22px;
-        display: grid;
-        place-items: center;
-        border-radius: 999px;
-        background: #ffffff;
-        color: #1d2a48;
-        font-size: 0.76rem;
-        font-weight: 700;
-        padding: 0 6px;
-      }
-
-      .hero {
-        display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
-        gap: 24px;
-        padding: 32px;
-        border-radius: 32px;
-        margin-bottom: 24px;
-      }
-
-      .hero-copy h1 {
-        margin: 0 0 10px;
-        font-size: clamp(2rem, 4vw, 3.25rem);
-        line-height: 1.02;
-        letter-spacing: -0.04em;
-      }
-
-      .hero-copy p {
-        margin: 0 0 18px;
-        color: var(--muted);
-        font-size: 1rem;
-        line-height: 1.7;
-        max-width: 620px;
-      }
-
-      .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-bottom: 14px;
-      }
-
-      .btn-glass {
-        border: 1px solid rgba(255, 255, 255, 0.24);
-        color: #fff;
-        background: rgba(255, 255, 255, 0.15);
-        padding: 12px 18px;
-        border-radius: 999px;
-        cursor: pointer;
-        transition: all 0.25s ease;
-      }
-
-      .hero-highlights {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 12px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.12);
-        color: var(--muted);
-        font-size: 0.92rem;
-      }
-
-      .hero-side {
-        display: grid;
-        gap: 12px;
-        align-content: start;
-        padding: 18px;
-        border-radius: 24px;
-        background: rgba(255, 255, 255, 0.08);
-      }
-
-      .hero-side h2 {
-        margin: 0;
-        font-size: 1.05rem;
-      }
-
-      .hero-side p {
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.6;
-      }
-
-      .catalog {
-        padding: 10px 0 0;
-      }
-
-      .section-heading {
-        display: flex;
-        align-items: end;
-        justify-content: space-between;
-        gap: 10px;
-        margin: 14px 0 12px;
-      }
-
-      .section-heading h2 {
-        margin: 0;
-        font-size: 1.15rem;
-      }
-
-      .section-heading p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
-
-      .filter-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 16px;
-      }
-
-      .filter-btn {
-        border: 0;
-        padding: 10px 16px;
-        border-radius: 999px;
-        color: #fff;
-        background: rgba(255, 255, 255, 0.15);
-        cursor: pointer;
-        transition: all 0.25s ease;
-      }
-
-      .filter-btn.active {
-        background: rgba(255, 255, 255, 0.28);
-      }
-
-      .product-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-        gap: 16px;
-      }
-
-      .product-card {
-        display: flex;
-        flex-direction: column;
-        border-radius: 24px;
-        overflow: hidden;
-      }
-
-      .product-card img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        display: block;
-      }
-
-      .product-body {
-        padding: 14px 14px 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .product-body h3 {
-        margin: 0;
-        font-size: 1rem;
-        letter-spacing: -0.02em;
-      }
-
-      .product-price {
-        font-weight: 700;
-        font-size: 1.1rem;
-      }
-
-      .product-meta {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-      }
-
-      .empty-card {
-        grid-column: 1 / -1;
-        padding: 24px;
-        border-radius: 24px;
-        text-align: center;
-        color: var(--muted);
-      }
-
-      .overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(2, 7, 19, 0.4);
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.25s ease;
-        z-index: 60;
-      }
-
-      .overlay.active {
-        opacity: 1;
-        visibility: visible;
-      }
-
-      .cart-sidebar {
-        position: fixed;
-        top: 0;
-        right: 0;
-        height: 100vh;
-        width: min(360px, 100%);
-        z-index: 70;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        border-left: 1px solid rgba(255, 255, 255, 0.28);
-      }
-
-      .cart-sidebar.open {
-        transform: translateX(0);
-      }
-
-      .cart-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 18px 18px 12px;
-      }
-
-      .cart-header h3 {
-        margin: 0;
-        font-size: 1.12rem;
-      }
-
-      .icon-btn {
-        border: 0;
-        background: transparent;
-        color: #fff;
-        cursor: pointer;
-        font-size: 1.1rem;
-      }
-
-      .cart-items {
-        flex: 1;
-        overflow-y: auto;
-        padding: 0 16px 16px;
-      }
-
-      .empty-cart {
-        padding: 24px;
-        border-radius: 20px;
-        text-align: center;
-        color: var(--muted);
-        margin-top: 10px;
-      }
-
-      .cart-list {
-        display: grid;
-        gap: 10px;
-      }
-
-      .cart-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 12px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.14);
-      }
-
-      .cart-item strong {
-        display: block;
-        margin-bottom: 4px;
-      }
-
-      .cart-item button {
-        border: 0;
-        background: rgba(255, 255, 255, 0.2);
-        color: #fff;
-        border-radius: 999px;
-        padding: 7px 10px;
-        cursor: pointer;
-      }
-
-      .cart-footer {
-        padding: 16px 18px 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.16);
-        display: grid;
-        gap: 10px;
-      }
-
-      .cart-total {
-        display: flex;
-        justify-content: space-between;
-        font-size: 1rem;
-      }
-
-      .checkout-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-
-      .cart-toggle.bump {
-        animation: bump 0.35s ease;
-      }
-
-      @keyframes drift {
-        from {
-          transform: translate3d(0, 0, 0) scale(1);
-        }
-        to {
-          transform: translate3d(20px, 18px, 0) scale(1.08);
-        }
-      }
-
-      @keyframes bump {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.04); }
-        100% { transform: scale(1); }
-      }
-
-      @media (max-width: 840px) {
-        .hero {
-          grid-template-columns: 1fr;
-        }
-
-        .navbar {
-          border-radius: 24px;
-          flex-wrap: wrap;
-        }
-
-        .search-wrap {
-          order: 3;
-          max-width: none;
-          width: 100%;
-        }
-      }
-
-      @media (max-width: 560px) {
-        .page-shell {
-          width: min(100% - 16px, 1220px);
-        }
-
-        .hero {
-          padding: 20px;
-        }
-
-        .product-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="overlay" id="overlay"></div>
-
-    <div class="page-shell">
-      <header class="navbar glass">
-        <a href="#" class="brand">
-          <span class="brand-mark">⌁</span>
-          <span>Aurelia Commerce</span>
-        </a>
-        <label class="search-wrap glass" aria-label="Search products">
-          <span>⌕</span>
-          <input id="searchInput" type="search" placeholder="Search devices, food, gadgets..." />
-        </label>
-        <button class="cart-toggle glass" id="cartToggle" type="button">
-          🛍
-          <span class="cart-badge" id="cartBadge">0</span>
-        </button>
-      </header>
-
-      <section class="hero glass">
-        <div class="hero-copy">
-          <h1>Future of Shopping</h1>
-          <p>Discover polished essentials with the comfort of an Apple-inspired interface, fast search, and a smart cart built for the modern shopper.</p>
-          <div class="hero-actions">
-            <button class="btn-glass" type="button" id="shopNowBtn">Shop Now</button>
-            <button class="btn-glass" type="button">Explore Deals</button>
-          </div>
-          <div class="hero-highlights">
-            <span class="pill">⚡ Instant search</span>
-            <span class="pill">🛒 Live cart</span>
-            <span class="pill">✨ Glass UI</span>
-          </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Janajyoti Vidyamandir - Empowering Minds, Building Futures</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container header-content">
+            <div class="logo">
+                <div class="logo-icon">🎓</div>
+                <h1>Janajyoti Vidyamandir</h1>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="search" placeholder="Search..." aria-label="Search">
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </div>
+
+            <!-- Live Status - School Time Panel -->
+            <div class="school-time-panel glass-effect" id="schoolTimePanel">
+                <div class="school-time-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+                        <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="school-time-display">
+                    <div class="current-time" id="currentTime">--:--</div>
+                    <div class="status-text" id="statusText">Checking...</div>
+                    <div class="hours-info" id="hoursInfo">Office Hours: 10:00 AM – 4:30 PM</div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <!-- Navigation Menu -->
+            <nav class="navbar">
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="#home" class="active">Home</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#admission">Admission</a></li>
+                    <li><a href="#academics">Academics</a></li>
+                    <li><a href="#login">Student Login</a></li>
+                    <li><a href="#notice">Notice/News</a></li>
+                    <li><a href="#gallery">Gallery</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
         </div>
-        <div class="hero-side">
-          <h2>Design-forward essentials</h2>
-          <p>Curated products across phones, food, and gadgets, all presented in a responsive glass storefront experience.</p>
-        </div>
-      </section>
+    </header>
 
-      <section class="catalog" id="catalog">
-        <div class="section-heading">
-          <h2>Browse products</h2>
-          <p>Filter by your favorite category.</p>
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <h2>Empowering Minds, Building Futures</h2>
+                <p>Providing quality education with innovative teaching methodologies and state-of-the-art facilities for holistic development.</p>
+                <div class="hero-actions">
+                    <a href="#admission" class="btn btn-primary">Apply for Admission</a>
+                    <a href="#login" class="btn btn-secondary">Student Login</a>
+                </div>
+                <div class="hero-status">
+                    <div class="status-badge" id="heroStatusBadge">🟢 Checking...</div>
+                    <div class="status-tooltip" id="heroStatusTooltip">Office Hours: 10:00 AM – 4:30 PM</div>
+                </div>
+            </div>
+
+            <div class="hero-image">
+                <div class="image-placeholder glass-effect">
+                    <div class="shimmer"></div>
+                    <!-- Placeholder for school image -->
+                    <svg width="100%" height="100%" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="400" height="300" fill="#e2e8f0"/>
+                        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#64748b" font-size="16">
+                            School Campus
+                        </text>
+                    </svg>
+                </div>
+            </div>
         </div>
-        <div class="filter-row" id="filterRow">
-          <button class="filter-btn active" data-category="All" type="button">All</button>
-          <button class="filter-btn" data-category="Phones" type="button">Phones</button>
-          <button class="filter-btn" data-category="Food" type="button">Food</button>
-          <button class="filter-btn" data-category="Gadgets" type="button">Gadgets</button>
-        </div>
-        <div class="product-grid" id="productGrid"></div>
-      </section>
+    </section>
+
+    <!-- Apply Now Floating Button -->
+    <div class="floating-action-btn">
+        <a href="#admission" class="btn btn-primary">Apply Now</a>
     </div>
 
-    <aside class="cart-sidebar glass" id="cartSidebar">
-      <div class="cart-header">
-        <h3>Your Cart</h3>
-        <button class="icon-btn" id="closeCart" type="button">✕</button>
-      </div>
-      <div class="cart-items" id="cartItems"></div>
-      <div class="cart-footer">
-        <div class="cart-total">
-          <span>Total</span>
-          <strong id="cartTotal">$0.00</strong>
+    <!-- About Us Section -->
+    <section class="section" id="about">
+        <div class="container">
+            <h2 class="section-title">About Us</h2>
+            <div class="about-content">
+                <div class="about-image glass-effect">
+                    <div class="shimmer"></div>
+                    <svg width="100%" height="100%" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="400" height="300" fill="#e2e8f0"/>
+                        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#64748b" font-size="16">
+                            School Infrastructure
+                        </text>
+                    </svg>
+                </div>
+                <div class="about-text">
+                    <h3>Our Journey</h3>
+                    <p>Janajyoti Vidyamandir was established in 2001 with a vision to provide quality education to the community. Over the years, we have grown into a premier educational institution committed to academic excellence and character building.</p>
+
+                    <h3>Mission & Vision</h3>
+                    <p><strong>Mission:</strong> To nurture young minds through holistic education, fostering intellectual curiosity, ethical values, and social responsibility.</p>
+                    <p><strong>Vision:</strong> To be a leading institution that empowers students to become innovative leaders and compassionate global citizens.</p>
+
+                    <div class="principal-message glass-effect">
+                        <h4>Principal's Welcome</h4>
+                        <p>Dear Parents and Students,</p>
+                        <p>Welcome to Janajyoti Vidyamandir! As principal, I am honored to lead an institution where every child is valued and encouraged to reach their full potential. Our dedicated faculty, modern facilities, and nurturing environment create the perfect foundation for lifelong learning.</p>
+                        <p>Together, we will continue to uphold our tradition of excellence while embracing innovation in education.</p>
+                        <p><strong>- Mr. Rajesh Kumar, Principal</strong></p>
+
+                        <div class="principal-photo glass-effect">
+                            <svg width="100%" height="100%" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="150" cy="150" r="120" fill="#e2e8f0"/>
+                                <circle cx="150" cy="100" r="30" fill="#64748b"/>
+                                <path d="M 120 140 Q 150 170 180 140" stroke="#64748b" stroke-width="8" fill="none"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <button class="btn-glass checkout-btn" id="checkoutBtn" type="button">Checkout</button>
-      </div>
-    </aside>
+    </section>
 
-    <script>
-      const products = [
-        { id: 1, name: 'iPhone 15 Pro', category: 'Phones', price: 999, image: 'https://source.unsplash.com/random/400x400/?iphone,phone' },
-        { id: 2, name: 'iPhone 14', category: 'Phones', price: 799, image: 'https://source.unsplash.com/random/400x400/?iphone,apple' },
-        { id: 3, name: 'Samsung Galaxy S24 Ultra', category: 'Phones', price: 1199, image: 'https://source.unsplash.com/random/400x400/?samsung,phone' },
-        { id: 4, name: 'Samsung Galaxy Z Fold', category: 'Phones', price: 1799, image: 'https://source.unsplash.com/random/400x400/?foldable,phone' },
-        { id: 5, name: 'Organic Apples', category: 'Food', price: 6.99, image: 'https://source.unsplash.com/random/400x400/?apples,fruit' },
-        { id: 6, name: 'Artisan Coffee Beans', category: 'Food', price: 14.5, image: 'https://source.unsplash.com/random/400x400/?coffee,beans' },
-        { id: 7, name: 'Dark Chocolate Bar', category: 'Food', price: 5.25, image: 'https://source.unsplash.com/random/400x400/?chocolate,sweet' },
-        { id: 8, name: 'Sparkling Water', category: 'Food', price: 3.99, image: 'https://source.unsplash.com/random/400x400/?water,bottle' },
-        { id: 9, name: 'AirPods Pro', category: 'Gadgets', price: 249, image: 'https://source.unsplash.com/random/400x400/?airpods,earbuds' },
-        { id: 10, name: 'Apple Watch Ultra', category: 'Gadgets', price: 799, image: 'https://source.unsplash.com/random/400x400/?watch,smartwatch' },
-        { id: 11, name: 'Mechanical Keyboard', category: 'Gadgets', price: 129, image: 'https://source.unsplash.com/random/400x400/?keyboard,mechanical' },
-        { id: 12, name: '4K Monitor', category: 'Gadgets', price: 349, image: 'https://source.unsplash.com/random/400x400/?monitor,display' }
-      ];
+    <!-- Admission Section -->
+    <section class="section" id="admission">
+        <div class="container">
+            <h2 class="section-title">Admission</h2>
 
-      const productGrid = document.getElementById('productGrid');
-      const searchInput = document.getElementById('searchInput');
-      const filterButtons = document.querySelectorAll('.filter-btn');
-      const cartToggle = document.getElementById('cartToggle');
-      const overlay = document.getElementById('overlay');
-      const cartSidebar = document.getElementById('cartSidebar');
-      const closeCart = document.getElementById('closeCart');
-      const cartItems = document.getElementById('cartItems');
-      const cartBadge = document.getElementById('cartBadge');
-      const cartTotal = document.getElementById('cartTotal');
-      const checkoutBtn = document.getElementById('checkoutBtn');
-      const shopNowBtn = document.getElementById('shopNowBtn');
-
-      let activeCategory = 'All';
-      let searchTerm = '';
-      let cart = [];
-
-      function formatCurrency(value) {
-        return `$${value.toFixed(2)}`;
-      }
-
-      function getFilteredProducts() {
-        const query = searchTerm.trim().toLowerCase();
-        return products.filter((product) => {
-          const matchesCategory = activeCategory === 'All' || product.category === activeCategory;
-          const matchesSearch = !query || product.name.toLowerCase().includes(query) || product.category.toLowerCase().includes(query);
-          return matchesCategory && matchesSearch;
-        });
-      }
-
-      function renderProducts() {
-        const filtered = getFilteredProducts();
-        productGrid.innerHTML = '';
-
-        if (!filtered.length) {
-          productGrid.innerHTML = `
-            <div class="empty-card glass">
-              <h3>No products found</h3>
-              <p>Try another keyword or category to uncover more essentials.</p>
+            <div class="admission-banner glass-effect">
+                <h2>Admission Open for 2026</h2>
+                <p>Applications are now open for Nursery to Grade 12. Limited seats available!</p>
             </div>
-          `;
-          return;
-        }
 
-        filtered.forEach((product) => {
-          const card = document.createElement('article');
-          card.className = 'product-card glass';
-          card.innerHTML = `
-            <img src="${product.image}" alt="${product.name}" />
-            <div class="product-body">
-              <span class="pill">${product.category}</span>
-              <h3>${product.name}</h3>
-              <div class="product-meta">
-                <span class="product-price">${formatCurrency(product.price)}</span>
-                <button class="btn-glass add-btn" data-id="${product.id}" type="button">Add to Cart</button>
-              </div>
+            <div class="admission-content">
+                <div class="admission-steps glass-effect">
+                    <h3>Admission Process</h3>
+                    <ol>
+                        <li><strong>Inquiry:</strong> Visit our campus or website to learn about our programs</li>
+                        <li><strong>Form Submission:</strong> Complete and submit the application form</li>
+                        <li><strong>Document Verification:</strong> Submit required documents for verification</li>
+                        <li><strong>Confirmation:</strong> Receive admission confirmation and fee details</li>
+                    </ol>
+                </div>
+
+                <div class="admission-form glass-effect">
+                    <h3>Online Application Form</h3>
+                    <form id="admissionForm">
+                        <div class="form-group">
+                            <label for="studentName">Student Name *</label>
+                            <input type="text" id="studentName" required placeholder="Enter full name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dob">Date of Birth *</label>
+                            <input type="date" id="dob" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="classApplying">Class Applying For *</label>
+                            <select id="classApplying" required>
+                                <option value="">Select Class</option>
+                                <option value="Nursery">Nursery</option>
+                                <option value="LKG">LKG</option>
+                                <option value="UKG">UKG</option>
+                                <option value="Grade 1">Grade 1</option>
+                                <option value="Grade 2">Grade 2</option>
+                                <option value="Grade 3">Grade 3</option>
+                                <option value="Grade 4">Grade 4</option>
+                                <option value="Grade 5">Grade 5</option>
+                                <option value="Grade 6">Grade 6</option>
+                                <option value="Grade 7">Grade 7</option>
+                                <option value="Grade 8">Grade 8</option>
+                                <option value="Grade 9">Grade 9</option>
+                                <option value="Grade 10">Grade 10</option>
+                                <option value="Grade 11">Grade 11</option>
+                                <option value="Grade 12">Grade 12</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="parentName">Parent/Guardian Name *</label>
+                            <input type="text" id="parentName" required placeholder="Enter parent/guardian name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <input type="tel" id="phone" required placeholder="Enter contact number">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" required placeholder="Enter email address">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Address *</label>
+                            <textarea id="address" rows="3" required placeholder="Enter full address"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="documents">Upload Documents (PDF/JPG/PNG) *</label>
+                            <input type="file" id="documents" accept=".pdf,.jpg,.jpeg,.png" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Submit Application</button>
+                    </form>
+                </div>
+
+                <div class="admission-info">
+                    <div class="eligibility glass-effect">
+                        <h3>Eligibility Criteria</h3>
+                        <ul>
+                            <li>Nursery: Minimum age 3+ years as of June 1st</li>
+                            <li>LKG: Minimum age 4+ years as of June 1st</li>
+                            <li>UKG: Minimum age 5+ years as of June 1st</li>
+                            <li>Grade 1: Minimum age 6+ years as of June 1st</li>
+                            <li>For higher grades: Transfer certificate and previous academic records required</li>
+                        </ul>
+                    </div>
+
+                    <div class="documents glass-effect">
+                        <h3>Required Documents</h3>
+                        <ul>
+                            <li>Birth Certificate (original + photocopy)</li>
+                            <li>Transfer Certificate (if applicable)</li>
+                            <li>Previous Academic Records (report cards)</li>
+                            <li>Passport-sized photographs (4 nos.)</li>
+                            <li>Parent's ID Proof (Aadhaar/PAN)</li>
+                            <li>Residence Proof</li>
+                            <li>Medical Fitness Certificate</li>
+                        </ul>
+                    </div>
+
+                    <div class="fee-structure glass-effect">
+                        <h3>Fee Structure (Per Annum)</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Tuition Fee</th>
+                                    <th>Development Fee</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Nursery</td>
+                                    <td>$800</td>
+                                    <td>$200</td>
+                                    <td>$1,000</td>
+                                </tr>
+                                <tr>
+                                    <td>LKG/UKG</td>
+                                    <td>$850</td>
+                                    <td>$220</td>
+                                    <td>$1,070</td>
+                                </tr>
+                                <tr>
+                                    <td>Grades 1-5</td>
+                                    <td>$950</td>
+                                    <td>$250</td>
+                                    <td>$1,200</td>
+                                </tr>
+                                <tr>
+                                    <td>Grades 6-8</td>
+                                    <td>$1,050</td>
+                                    <td>$280</td>
+                                    <td>$1,330</td>
+                                </tr>
+                                <tr>
+                                    <td>Grades 9-10</td>
+                                    <td>$1,200</td>
+                                    <td>$300</td>
+                                    <td>$1,500</td>
+                                </tr>
+                                <tr>
+                                    <td>Grades 11-12</td>
+                                    <td>$1,350</td>
+                                    <td>$350</td>
+                                    <td>$1,700</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="fee-note">*Fees are subject to change. Additional charges may apply for transportation, meals, and extracurricular activities.</p>
+                    </div>
+                </div>
             </div>
-          `;
-          productGrid.appendChild(card);
-        });
+        </div>
+    </section>
 
-        document.querySelectorAll('.add-btn').forEach((button) => {
-          button.addEventListener('click', () => addToCart(Number(button.dataset.id)));
-        });
-      }
+    <!-- Student Login Section -->
+    <section class="section" id="login">
+        <div class="container">
+            <h2 class="section-title">Student Login Portal</h2>
 
-      function addToCart(productId) {
-        const product = products.find((item) => item.id === productId);
-        if (!product) return;
-
-        const existingItem = cart.find((item) => item.id === productId);
-        if (existingItem) {
-          existingItem.quantity += 1;
-        } else {
-          cart.push({ ...product, quantity: 1 });
-        }
-
-        updateCartUI();
-        cartToggle.classList.remove('bump');
-        void cartToggle.offsetWidth;
-        cartToggle.classList.add('bump');
-      }
-
-      function removeFromCart(productId) {
-        cart = cart.filter((item) => item.id !== productId);
-        updateCartUI();
-      }
-
-      function updateCartUI() {
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        cartBadge.textContent = totalItems;
-        const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        cartTotal.textContent = formatCurrency(totalPrice);
-        checkoutBtn.disabled = cart.length === 0;
-        renderCart();
-      }
-
-      function renderCart() {
-        cartItems.innerHTML = '';
-
-        if (!cart.length) {
-          cartItems.innerHTML = `
-            <div class="empty-cart glass">
-              <div style="font-size: 1.5rem; margin-bottom: 6px;">🛒</div>
-              <strong>Your cart is empty</strong>
-              <p>Add a few favorites and they will appear here instantly.</p>
+            <div class="login-tabs">
+                <button class="tab-btn active" data-tab="student">Student</button>
+                <button class="tab-btn" data-tab="parent">Parent</button>
+                <button class="tab-btn" data-tab="teacher">Teacher</button>
             </div>
-          `;
-          return;
-        }
 
-        const list = document.createElement('div');
-        list.className = 'cart-list';
+            <div class="tab-content active" id="studentTab">
+                <div class="login-form glass-effect">
+                    <h3>Student Login</h3>
+                    <form id="studentLoginForm">
+                        <div class="form-group">
+                            <label for="studentId">Student ID / Username *</label>
+                            <input type="text" id="studentId" required placeholder="Enter your student ID">
+                        </div>
 
-        cart.forEach((item) => {
-          const row = document.createElement('div');
-          row.className = 'cart-item';
-          row.innerHTML = `
-            <div>
-              <strong>${item.name}</strong>
-              <div>${formatCurrency(item.price)} × ${item.quantity}</div>
+                        <div class="form-group">
+                            <label for="studentPassword">Password *</label>
+                            <input type="password" id="studentPassword" required placeholder="Enter your password">
+                        </div>
+
+                        <div class="form-group">
+                            <a href="#" class="forgot-link" id="forgotStudentPass">Forgot Password?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+
+                    <div class="login-demo" id="studentDemo">
+                        <p>Demo Login: Use <strong>student001</strong> as ID and <strong>password123</strong> as password</p>
+                    </div>
+
+                    <!-- Mock Dashboard (hidden by default, shown after login) -->
+                    <div class="dashboard" id="studentDashboard" style="display: none; margin-top: 2rem;">
+                        <h3>Student Dashboard</h3>
+                        <div class="dashboard-grid">
+                            <div class="dashboard-card glass-effect">
+                                <h4>Attendance</h4>
+                                <p>95% Attendance Rate</p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 95%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card glass-effect">
+                                <h4>Grades</h4>
+                                <p>Overall GPA: 3.8/4.0</p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 95%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card glass-effect">
+                                <h4>Timetable</h4>
+                                <p>View Today's Schedule</p>
+                                <button class="btn btn-secondary btn-sm">View Schedule</button>
+                            </div>
+
+                            <div class="dashboard-card glass-effect">
+                                <h4>Assignments</h4>
+                                <p>3 Pending Assignments</p>
+                                <button class="btn btn-secondary btn-sm">View Assignments</button>
+                            </div>
+
+                            <div class="dashboard-card glass-effect">
+                                <h4>Fee Status</h4>
+                                <p>Paid Up to Date</p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 100%; background: #10b981;"></div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-card glass-effect">
+                                <h4>Announcements</h4>
+                                <p>2 New Notices</p>
+                                <button class="btn btn-secondary btn-sm">View Notices</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button type="button" data-id="${item.id}">Remove</button>
-          `;
-          list.appendChild(row);
-        });
 
-        cartItems.appendChild(list);
-        cartItems.querySelectorAll('button[data-id]').forEach((button) => {
-          button.addEventListener('click', () => removeFromCart(Number(button.dataset.id)));
-        });
-      }
+            <div class="tab-content" id="parentTab">
+                <div class="login-form glass-effect">
+                    <h3>Parent Login</h3>
+                    <form id="parentLoginForm">
+                        <div class="form-group">
+                            <label for="parentId">Parent ID / Username *</label>
+                            <input type="text" id="parentId" required placeholder="Enter your parent ID">
+                        </div>
 
-      function openCart() {
-        cartSidebar.classList.add('open');
-        overlay.classList.add('active');
-      }
+                        <div class="form-group">
+                            <label for="parentPassword">Password *</label>
+                            <input type="password" id="parentPassword" required placeholder="Enter your password">
+                        </div>
 
-      function closeCartPanel() {
-        cartSidebar.classList.remove('open');
-        overlay.classList.remove('active');
-      }
+                        <div class="form-group">
+                            <a href="#" class="forgot-link" id="forgotParentPass">Forgot Password?</a>
+                        </div>
 
-      searchInput.addEventListener('input', (event) => {
-        searchTerm = event.target.value;
-        renderProducts();
-      });
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
 
-      filterButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-          filterButtons.forEach((item) => item.classList.remove('active'));
-          button.classList.add('active');
-          activeCategory = button.dataset.category;
-          renderProducts();
-        });
-      });
+                    <div class="login-demo" id="parentDemo">
+                        <p>Demo Login: Use <strong>parent001</strong> as ID and <strong>password123</strong> as password</p>
+                    </div>
 
-      cartToggle.addEventListener('click', openCart);
-      closeCart.addEventListener('click', closeCartPanel);
-      overlay.addEventListener('click', closeCartPanel);
-      shopNowBtn.addEventListener('click', () => document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' }));
+                    <!-- Mock Dashboard -->
+                    <div class="dashboard" id="parentDashboard" style="display: none; margin-top: 2rem;">
+                        <h3>Parent Dashboard</h3>
+                        <div class="dashboard-grid">
+                            <div class="dashboard-card glass-effect">
+                                <h4>Child's Attendance</h4>
+                                <p>95% Attendance Rate</p>
+                            </div>
 
-      checkoutBtn.addEventListener('click', () => {
-        if (!cart.length) return;
-        alert('Thank you for your purchase!');
-        cart = [];
-        updateCartUI();
-        closeCartPanel();
-      });
+                            <div class="dashboard-card glass-effect">
+                                <h4>Academic Performance</h4>
+                                <p>GPA: 3.8/4.0</p>
+                            </div>
 
-      renderProducts();
-      updateCartUI();
-    </script>
-  </body>
+                            <div class="dashboard-card glass-effect">
+                                <h4>Fee Payment</h4>
+                                <p>All dues cleared</p>
+                            </div>
+
+                            <div class="dashboard-card glass-effect">
+                                <h4>School Updates</h4>
+                                <p>Latest news and events</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="teacherTab">
+                <div class="login-form glass-effect">
+                    <h3>Teacher Login</h3>
+                    <form id="teacherLoginForm">
+                        <div class="form-group">
+                            <label for="teacherId">Teacher ID / Username *</label>
+                            <input type="text" id="teacherId" required placeholder="Enter your teacher ID">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="teacherPassword">Password *</label>
+                            <input type="password" id="teacherPassword" required placeholder="Enter your password">
+                        </div>
+
+                        <div class="form-group">
+                            <a href="#" class="forgot-link" id="forgotTeacherPass">Forgot Password?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+
+                    <div class="login-demo" id="teacherDemo">
+                        <p>Demo Login: Use <strong>teacher001</strong> as ID and <strong>password123</strong> as password</p>
+                    </div>
+
+                    <!-- Mock Dashboard -->
+                    <div class="dashboard" id="teacherDashboard" style="display: none; margin-top: 2rem;">
+                        <h3>Teacher Dashboard</h3>
+                        <div class="dashboard-grid">
+                            <div class="dashboard-card glass-effect">
+                                <h4>Class Attendance</h4>
+                                <p>92% Average Attendance</p>
+                            </div>
+
+                            <div class="dashboard-card glass-effect">
+                                <h4>Assignment Status</h4>
+                                <p>85% Assignments Graded</p>
+                            </div>
+
+                            <div class="dashboard-card glass-effect">
+                                <h4>Schedule</h4>
+                                <p>Today: 3 Classes</p>
+                            </div>
+
+                            <div class="dashboard-card glass-effect">
+                                <h4>Announcements</h4>
+                                <p>Send notices to students</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Academics Section -->
+    <section class="section" id="academics">
+        <div class="container">
+            <h2 class="section-title">Academics</h2>
+
+            <div class="academics-content">
+                <div class="academics-left glass-effect">
+                    <h3>Classes Offered</h3>
+                    <ul class="class-list">
+                        <li><span>Pre-Primary:</span> Nursery, LKG, UKG</li>
+                        <li><span>Primary:</span> Grades 1-5</li>
+                        <li><span>Middle School:</span> Grades 6-8</li>
+                        <li><span>Secondary:</span> Grades 9-10</li>
+                        <li><span>Senior Secondary:</span> Grades 11-12 (Science, Commerce, Humanities)</li>
+                    </ul>
+
+                    <h3>Curriculum Overview</h3>
+                    <p>We follow the national curriculum enhanced with:</p>
+                    <ul>
+                        <li>STEM-focused learning with hands-on experiments</li>
+                        <li>Language development programs</li>
+                        <li>Life skills and value education</li>
+                        <li>Physical education and sports</li>
+                        <li>Arts and cultural activities</li>
+                    </ul>
+                </div>
+
+                <div class="academics-right glass-effect">
+                    <h3>Academic Calendar</h3>
+                    <div class="calendar">
+                        <div class="month-header">
+                            <h4>September 2026</h4>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="weekday">Sun</div>
+                            <div class="weekday">Mon</div>
+                            <div class="weekday">Tue</div>
+                            <div class="weekday">Wed</div>
+                            <div class="weekday">Thu</div>
+                            <div class="weekday">Fri</div>
+                            <div class="weekday">Sat</div>
+
+                            <!-- Days of the month -->
+                            <div class="day">1</div>
+                            <div class="day">2</div>
+                            <div class="day event">3<span class="event-dot"></span></div>
+                            <div class="day">4</div>
+                            <div class="day">5</div>
+                            <div class="day">6</div>
+                            <div class="day">7</div>
+                            <div class="day">8</div>
+                            <div class="day">9</div>
+                            <div class="day event">10<span class="event-dot"></span></div>
+                            <div class="day">11</div>
+                            <div class="day">12</div>
+                            <div class="day">13</div>
+                            <div class="day">14</div>
+                            <div class="day">15</div>
+                            <div class="day event">16<span class="event-dot"></span></div>
+                            <div class="day">17</div>
+                            <div class="day">18</div>
+                            <div class="day">19</div>
+                            <div class="day">20</div>
+                            <div class="day">21</div>
+                            <div class="day event">22<span class="event-dot"></span></div>
+                            <div class="day">23</div>
+                            <div class="day">24</div>
+                            <div class="day">25</div>
+                            <div class="day">26</div>
+                            <div class="day event">27<span class="event-dot"></span></div>
+                            <div class="day">28</div>
+                            <div class="day">29</div>
+                            <div class="day">30</div>
+                        </div>
+
+                        <div class="event-legend">
+                            <span class="event-dot"></span> Exam / Event / Holiday
+                        </div>
+                    </div>
+
+                    <h4>Faculty & Staff</h4>
+                    <div class="faculty-grid">
+                        <div class="faculty-card glass-effect">
+                            <div class="faculty-photo">
+                                <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="40" cy="40" r="35" fill="#e2e8f0"/>
+                                    <circle cx="40" cy="25" r="15" fill="#64748b"/>
+                                    <path d="M 25 50 Q 40 70 55 50" stroke="#64748b" stroke-width="3" fill="none"/>
+                                </svg>
+                            </div>
+                            <div class="faculty-info">
+                                <h5>Ms. Anjali Sharma</h5>
+                                <p>Senior Mathematics Teacher</p>
+                                <p>Email: anjali@janajyoti.edu.np</p>
+                            </div>
+                        </div>
+
+                        <div class="faculty-card glass-effect">
+                            <div class="faculty-photo">
+                                <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="40" cy="40" r="35" fill="#e2e8f0"/>
+                                    <circle cx="40" cy="25" r="15" fill="#64748b"/>
+                                    <path d="M 25 50 Q 40 70 55 50" stroke="#64748b" stroke-width="3" fill="none"/>
+                                </svg>
+                            </div>
+                            <div class="faculty-info">
+                                <h5>Mr. Rajesh Kumar</h5>
+                                <p>Principal & Science Coordinator</p>
+                                <p>Email: principal@janajyoti.edu.np</p>
+                            </div>
+                        </div>
+
+                        <div class="faculty-card glass-effect">
+                            <div class="faculty-photo">
+                                <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="40" cy="40" r="35" fill="#e2e8f0"/>
+                                    <circle cx="40" cy="25" r="15" fill="#64748b"/>
+                                    <path d="M 25 50 Q 40 70 55 50" stroke="#64748b" stroke-width="3" fill="none"/>
+                                </svg>
+                            </div>
+                            <div class="faculty-info">
+                                <h5>Ms. Priya Patel</h5>
+                                <p>English Department Head</p>
+                                <p>Email: priya@janajyoti.edu.np</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notice / News Section -->
+    <section class="section" id="notice">
+        <div class="container">
+            <h2 class="section-title">Notice Board & News</h2>
+
+            <div class="ticker glass-effect">
+                <div class="ticker-track">
+                    <div class="ticker-item">📢 Admission Open for 2026-27 Session - Apply Now!</div>
+                    <div class="ticker-item">📅 Half-Yearly Exams Commence from September 15, 2026</div>
+                    <div class="ticker-item">🏆 Annual Sports Day Scheduled for October 5, 2026</div>
+                    <div class="ticker-item">🎨 Inter-School Art Competition Results Announced</div>
+                    <div class="ticker-item">📚 Library Week Celebration from November 10-16, 2026</div>
+                    <div class="ticker-item">👨‍👩‍👧‍👦 Parent-Teacher Meeting Schedule Released</div>
+                    <div class="ticker-item">💻 Computer Lab Upgrade Completed - New Systems Installed</div>
+                    <div class="ticker-item">🌱 Tree Plantation Drive on World Environment Day</div>
+                </div>
+            </div>
+
+            <h3>Latest News</h3>
+            <div class="news-grid">
+                <div class="news-card glass-effect">
+                    <h4>Janajyoti Vidyamandir Secures 1st Place in District Science Fair</h4>
+                    <p>Our students showcased innovative projects on renewable energy and robotics, winning top honors in the annual district-level science fair held last week.</p>
+                    <p class="date">September 5, 2026</p>
+                </div>
+
+                <div class="news-card glass-effect">
+                    <h4>New Computer Lab Inaugurated with 50 Latest Systems</h4>
+                    <p>To enhance digital learning, we have upgraded our computer lab with state-of-the-art systems featuring the latest processors and educational software.</p>
+                    <p class="date">August 28, 2026</p>
+                </div>
+
+                <div class="news-card glass-effect">
+                    <h4>Annual Cultural Fest 'Sanskriti 2026' a Grand Success</h4>
+                    <p>The three-day cultural extravaganza featured dance, music, drama, and art performances by students from all grades, attracting over 2000 visitors.</p>
+                    <p class="date">August 15, 2026</p>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="faq-section glass-effect" style="margin-top: 3rem;">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <div class="faq-question">What is the admission process for new students?</div>
+                    <div class="faq-answer">The admission process involves inquiry, form submission, document verification, and confirmation. Detailed steps are available in our Admission section.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">What documents are required for admission?</div>
+                    <div class="faq-answer">Required documents include birth certificate, transfer certificate (if applicable), academic records, photographs, parent ID proof, residence proof, and medical fitness certificate.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">What are the school timings?</div>
+                    <div class="faq-answer">School hours are from 10:00 AM to 4:30 PM, Monday through Friday.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="section" id="gallery">
+        <div class="container">
+            <h2 class="section-title">Gallery</h2>
+
+            <div class="gallery-grid">
+                <div class="gallery-item glass-effect">
+                    <img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22><rect width=%22400%22 height=%22300%22 fill=%22%23e2e8f0%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%2364748b%22 font-size=%2216%22>Sports Day</text></svg>" alt="Sports Day">
+                    <div class="overlay">
+                        <h3>Sports Day 2026</h3>
+                        <p>Students participating in track and field events</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-effect">
+                    <img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22><rect width=%22400%22 height=%22300%22 fill=%22%23e2e8f0%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%2364748b%22 font-size=%2216%22>Science Lab</text></svg>" alt="Science Lab">
+                    <div class="overlay">
+                        <h3>Science Laboratory</h3>
+                        <p>Hands-on experiments in physics, chemistry, and biology</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-effect">
+                    <img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22><rect width=%22400%22 height=%22300%22 fill=%22%23e2e8f0%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%2364748b%22 font-size=%2216%22>Library</text></svg>" alt="Library">
+                    <div class="overlay">
+                        <h3>School Library</h3>
+                        <p>Extensive collection of books and digital resources</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-effect">
+                    <img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22><rect width=%22400%22 height=%22300%22 fill=%22%23e2e8f0%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%2364748b%22 font-size=%2216%22>Art Class</text></svg>" alt="Art Class">
+                    <div class="overlay">
+                        <h3>Art & Craft Session</h3>
+                        <p>Students expressing creativity through various art forms</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-effect">
+                    <img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22><rect width=%22400%22 height=%22300%22 fill=%22%23e2e8f0%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%2364748b%22 font-size=%2216%22>Computer Lab</text></svg>" alt="Computer Lab">
+                    <div class="overlay">
+                        <h3>Computer Laboratory</h3>
+                        <p>Students learning coding and digital skills</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-effect">
+                    <img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22><rect width=%22400%22 height=%22300%22 fill=%22%23e2e8f0%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%2364748b%22 font-size=%2216%22>Music Room</text></svg>" alt="Music Room">
+                    <div class="overlay">
+                        <h3>Music Education</h3>
+                        <p>Learning vocal and instrumental music</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-section glass-effect">
+                <h3>School Activities Video</h3>
+                <div class="video-placeholder">
+                    <svg width="100%" height="100%" viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="400" height="250" fill="#e2e8f0"/>
+                        <circle cx="200" cy="125" r="60" fill="#2563eb"/>
+                        <polygon points="170,100 230,125 170,150" fill="white"/>
+                    </svg>
+                    <div class="play-button">▶</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="section testimonials-section">
+        <div class="container">
+            <h2 class="section-title">What Parents & Alumni Say</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card glass-effect">
+                    <div class="testimonial-text">
+                        <p>"Janajyoti Vidyamandir has been instrumental in shaping my child's academic and personal growth. The dedicated teachers and nurturing environment have made all the difference."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="25" cy="25" r="20" fill="#e2e8f0"/>
+                                <circle cx="25" cy="15" r="8" fill="#64748b"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4>Mrs. Sunita Sharma</h4>
+                            <p>Parent of Grade 8 Student</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card glass-effect">
+                    <div class="testimonial-text">
+                        <p>"My years at Janajyoti Vidyamandir laid the foundation for my successful career in engineering. The school's emphasis on both academics and character building is truly commendable."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="25" cy="25" r="20" fill="#e2e8f0"/>
+                                <circle cx="25" cy="15" r="8" fill="#64748b"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4>Mr. Arjun Thapa</h4>
+                            <p>Alumni, Class of 2018</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card glass-effect">
+                    <div class="testimonial-text">
+                        <p>"As a parent, I appreciate the regular communication from teachers and the school's commitment to holistic development. My child looks forward to going to school every day!"</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="25" cy="25" r="20" fill="#e2e8f0"/>
+                                <circle cx="25" cy="15" r="8" fill="#64748b"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4>Mr. Rajiv Gupta</h4>
+                            <p>Parent of Grade 5 Student</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section" id="contact">
+        <div class="container">
+            <h2 class="section-title">Contact Us</h2>
+
+            <div class="contact-content">
+                <div class="contact-info glass-effect">
+                    <h3>Get in Touch</h3>
+                    <p><strong>Address:</strong> Janajyoti Vidyamandir, Kantipur Marg, Kathmandu, Nepal</p>
+                    <p><strong>Phone:</strong> +977-1-4XXXXX</p>
+                    <p><strong>Email:</strong> info@janajyoti.edu.np</p>
+                    <p><strong>Website:</strong> www.janajyoti.edu.np</p>
+
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    </div>
+
+                    <!-- Google Map Placeholder -->
+                    <div class="map-placeholder glass-effect" style="margin-top: 1.5rem; height: 200px;">
+                        <svg width="100%" height="100%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="400" height="200" fill="#e2e8f0"/>
+                            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#64748b" font-size="16">
+                                Google Map Location
+                            </text>
+                            <path d="M 200 50 L 200 30 L 210 40 L 200 50 Z" fill="#2563eb"/>
+                            <circle cx="200" cy="50" r="5" fill="white"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="contact-form glass-effect">
+                    <h3>Send Us a Message</h3>
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label for="contactName">Name *</label>
+                            <input type="text" id="contactName" required placeholder="Enter your name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contactEmail">Email *</label>
+                            <input type="email" id="contactEmail" required placeholder="Enter your email">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contactSubject">Subject</label>
+                            <input type="text" id="contactSubject" placeholder="Enter subject">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contactMessage">Message *</label>
+                            <textarea id="contactMessage" rows="5" required placeholder="Enter your message"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="section newsletter-section">
+        <div class="container">
+            <div class="newsletter-container glass-effect">
+                <h2>Stay Updated with Our Newsletter</h2>
+                <p>Get the latest news, events, and updates straight to your inbox</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#admission">Admission</a></li>
+                    <li><a href="#academics">Academics</a></li>
+                    <li><a href="#login">Student Login</a></li>
+                    <li><a href="#notice">Notice/News</a></li>
+                    <li><a href="#gallery">Gallery</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Contact Info</h3>
+                <p><strong>Address:</strong> Janajyoti Vidyamandir<br>Kantipur Marg, Kathmandu, Nepal</p>
+                <p><strong>Phone:</strong> +977-1-4XXXXX</p>
+                <p><strong>Email:</strong> info@janajyoti.edu.np</p>
+                <p><strong>Office Hours:</strong> 10:00 AM – 4:30 PM (Mon-Fri)</p>
+            </div>
+
+            <div class="footer-section">
+                <h3>Stay Connected</h3>
+                <p>Follow us for updates:</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Newsletter</h3>
+                <p>Subscribe to our newsletter for latest updates:</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 Janajyoti Vidyamandir. All Rights Reserved.</p>
+            <p>Designed with ❤️ for Education</p>
+            <div class="theme-toggle">
+                <button id="themeToggle" aria-label="Toggle dark/light mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Font Awesome for icons (using CDN) -->
+    <script src="https://kit.fontawesome.com/yourkit.js" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+</body>
 </html>
